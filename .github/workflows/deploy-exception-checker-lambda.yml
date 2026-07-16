@@ -1,0 +1,47 @@
+name: Deploy exception-checker-lambda
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "exception-checker-lambda/**"
+      - ".github/workflows/deploy-exception-checker-lambda.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: exception-checker-lambda
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies into package directory
+        run: |
+          pip install --platform manylinux2014_x86_64 --target package --implementation cp \
+            --python-version 3.12 --only-binary=:all: --upgrade -r requirements.txt
+
+      - name: Build deployment package
+        run: |
+          cp handler.py package/
+          cd package
+          zip -r ../function.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name exception-checker-lambda \
+            --zip-file fileb://function.zip
