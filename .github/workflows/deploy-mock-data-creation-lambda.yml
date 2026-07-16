@@ -20,12 +20,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Install dependencies into package directory
         run: |
           pip install --platform manylinux2014_x86_64 --target package --implementation cp \
-            --python-version 3.12 --only-binary=:all: --upgrade -r requirements.txt
+            --python-version 3.14 --only-binary=:all: --upgrade -r requirements.txt
 
       - name: Build deployment package
         run: |
