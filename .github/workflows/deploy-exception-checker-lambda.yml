@@ -29,7 +29,7 @@ jobs:
 
       - name: Build deployment package
         run: |
-          cp handler.py package/
+          cp lambda_function.py package/
           cd package
           zip -r ../function.zip .
 
